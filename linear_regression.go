@@ -50,19 +50,6 @@ func gdSolver(x [][]float64, y []float64, nIter int, gamma float64) []float64 {
 	return w
 }
 
-// predY uses the given weights to calculate each sample's label.
-func predY(x [][]float64, w []float64) []float64 {
-	n, nFeatures := len(x), len(x[0])
-	predY := make([]float64, n)
-	for i := 0; i < n; i++ {
-		for j := 1; j <= nFeatures; j++ {
-			predY[i] += x[i][j-1] * w[j]
-		}
-		predY[i] += w[0]
-	}
-	return predY
-}
-
 // slsSolver is a Simple Least Squares solver. It requires only one value for each sample and will return the intercept (w[0]) and slope (w[1]).
 func slsSolver(x [][]float64, y []float64) []float64 {
 	n := len(x)
@@ -80,4 +67,32 @@ func slsSolver(x [][]float64, y []float64) []float64 {
 	w[1] = ((float64(n) * xy) - (xSum * ySum)) / ((float64(n) * xSquaredSum) - (xSum * xSum))
 	w[0] = (ySum - (w[1] * xSum)) / float64(n)
 	return w
+}
+
+// Predict will predict values using the model created with the Fit function
+func (l *LinearRegression) Predict(x [][]float64) []float64 {
+	return predY(x, l.Weights)
+}
+
+// predY uses the given weights to calculate each sample's label.
+func predY(x [][]float64, w []float64) []float64 {
+	n, nFeatures := len(x), len(x[0])
+	predY := make([]float64, n)
+	for i := 0; i < n; i++ {
+		for j := 1; j <= nFeatures; j++ {
+			predY[i] += x[i][j-1] * w[j]
+		}
+		predY[i] += w[0]
+	}
+	return predY
+}
+
+// Mean Squared Error. Lower is better.
+func MeanSquaredError(y, predY []float64) float64 {
+	n := len(y)
+	var total float64
+	for i := 0; i < n; i++ {
+		total += (y[i] - predY[i]) * (y[i] - predY[i])
+	}
+	return total / float64(n)
 }
